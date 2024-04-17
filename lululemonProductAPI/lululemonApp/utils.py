@@ -26,7 +26,6 @@ def fetch_product_details(url):
 
         # Parse the response data
         data = response.json()
-
         # Extract the product details from the response data
         products = data.get("contents", [])[0].get("mainContent", [])[0].get("contents", [])[0].get("records", [])
         for product in products:

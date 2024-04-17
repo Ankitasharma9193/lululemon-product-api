@@ -1,34 +1,128 @@
 from django.test import TestCase, RequestFactory
+from django.core.paginator import Paginator
+from unittest.mock import patch, MagicMock
 from ..views import get_product_details
-from ..utils import fetch_product_details  # Mock this function
-from unittest.mock import patch
+from ..utils import fetch_product_details
 
-
-@patch('lululemonApp.views.fetch_product_details')
-@patch('lululemonApp.views.cache')
-
-class ProductDetailsViewTestCase(TestCase):
+class ProductListViewTestCase(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
 
-    def test_get_product_details_cached(self, mock_cache, mock_fetch_product_details):
-        # Mock the fetch_product_details function to return sample data
-        sample_product_details = [{'name': 'Leggings', 'price': '$50'}, {'name': 'Accessories', 'price': '$20'}]
-        mock_fetch_product_details.side_effect = [sample_product_details, sample_product_details]
+    @patch('lululemonApp.utils.requests.get')
+    @patch('lululemonApp.utils.cache.get', side_effect=[None, None])
+    @patch('lululemonApp.utils.cache.set', side_effect=MagicMock())
+    def test_fetch_products(self, mock_cache_set, mock_cache_get, mock_requests_get):
+        mock_records1 = [
+            {
+                "product.displayName": "Leggings 1",
+                "product.price": 50.0,
+                "product.allAvailableSizes": ["S", "M", "L"],
+                "product.sku.skuImages": ["image1.jpg", "image2.jpg"],
+                "product.defaultParentCategory": "Athletic Wear",
+                "currencyCode": "USD",
+                "url": "https://example.com/product/leggings-1"
+            },
+            {
+                "product.displayName": "Leggings 2",
+                "product.price": 60.0,
+                "product.allAvailableSizes": ["XS", "S", "M", "L"],
+                "product.sku.skuImages": ["image3.jpg", "image4.jpg"],
+                "product.defaultParentCategory": "Athletic Wear",
+                "currencyCode": "USD",
+                "url": "https://example.com/product/leggings-2"
+            }
+            # Add more mock records as needed
+        ]
 
-        # Create a request
-        request = self.factory.get('/products/')
+        # Example usage:
+        response1_data = {
+            "contents": [
+                {
+                    "mainContent": [
+                        {
+                            "contents": [
+                                {
+                                    "records": mock_records1
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
 
-        # Call the view function
-        response = get_product_details(request)
+        mock_records2 = [
+            {
+                "product.displayName": "Leggings 1",
+                "product.price": 50.0,
+                "product.allAvailableSizes": ["S", "M", "L"],
+                "product.sku.skuImages": ["image1.jpg", "image2.jpg"],
+                "product.defaultParentCategory": "Athletic Wear",
+                "currencyCode": "USD",
+                "url": "https://example.com/product/leggings-1"
+            },
+            {
+                "product.displayName": "Leggings 2",
+                "product.price": 60.0,
+                "product.allAvailableSizes": ["XS", "S", "M", "L"],
+                "product.sku.skuImages": ["image3.jpg", "image4.jpg"],
+                "product.defaultParentCategory": "Athletic Wear",
+                "currencyCode": "USD",
+                "url": "https://example.com/product/leggings-2"
+            }
+            # Add more mock records as needed
+        ]
 
-        # Assert that the view returns a JsonResponse
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response['Content-Type'], 'application/json')
+        # Example usage:
+        response2_data = {
+            "contents": [
+                {
+                    "mainContent": [
+                        {
+                            "contents": [
+                                {
+                                    "records": mock_records2
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
 
-        # Assert that fetch_product_details was called twice with the correct URLs
-        mock_fetch_product_details.assert_called_with('https://shop.lululemon.com/c/womens-leggings/_/N-8r6?format=json')
-        mock_fetch_product_details.assert_called_with('https://shop.lululemon.com/c/accessories/_/N-1z0xcmkZ1z0xl44Z8ok?format=json')
+        mock_response1 = MagicMock()
+        mock_response1.status_code = 200
+        mock_response1.json.return_value = response1_data
+        
+        mock_response2 = MagicMock()
+        mock_response2.status_code = 200
+        mock_response2.json.return_value = response2_data
 
-        # Assert that cache.set was called once with the correct cache key and data
-        mock_cache.set.assert_called_once_with('product_details_1', sample_product_details, timeout=3600)
+        # Mock the requests.get calls
+        mock_requests_get.side_effect = [mock_response1, mock_response2]
+
+        mock_request = self.factory.get('/products/')
+
+        # Call the fetch_products function twice
+        # The first call should trigger API requests
+        combined_products_first_call = get_product_details(mock_request)
+        print('~~~~~~~~~~~~~~~~~~~~~~~~`', combined_products_first_call)
+
+        # The second call should retrieve data from cache
+        # combined_products_second_call = get_product_details(mock_request)
+
+        # Check the combined products from the first call
+        # expected_combined_products = response1_data + response2_data
+        # self.assertEqual(combined_products_first_call, expected_combined_products)
+
+        # Check that cache is set correctly
+        mock_cache_set.assert_called_with('combined_products', expected_combined_products, timeout=300)
+
+        # Check the combined products from the second call
+        # self.assertEqual(combined_products_second_call, expected_combined_products)
+
+        # Check that cache is accessed instead of making API requests
+        mock_cache_get.assert_called_with('combined_products')
+
+if __name__ == '_main_':
+    unittest.main()

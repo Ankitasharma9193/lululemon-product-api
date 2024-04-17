@@ -5,6 +5,7 @@ from django.http import JsonResponse
 from .utils import fetch_product_details, paginate
 
 def get_product_details(request):
+    print('in ptoduct detail', request)
     urls = [
         "https://shop.lululemon.com/c/womens-leggings/_/N-8r6?format=json",
         "https://shop.lululemon.com/c/accessories/_/N-1z0xcmkZ1z0xl44Z8ok?format=json"
