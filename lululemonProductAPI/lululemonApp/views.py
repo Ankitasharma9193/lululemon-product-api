@@ -2,9 +2,7 @@ from django.shortcuts import render
 
 # Create your views here.
 from django.http import JsonResponse
-from .utils import fetch_product_details
-
-from django.core.cache import cache
+from .utils import fetch_product_details, paginate
 
 def get_product_details(request):
     urls = [
@@ -13,11 +11,13 @@ def get_product_details(request):
     ]
 
     product_details_list = []
-    
+
     for url in urls:
         product_details = fetch_product_details(url)
         if product_details:
-            product_details_list.append(product_details)
+            product_details_list.extend(product_details)
 
-    return JsonResponse(product_details_list, safe=False)
+    page = paginate(request, product_details_list)
+
+    return JsonResponse(list(page.object_list), safe=False)
 
