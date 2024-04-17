@@ -16,6 +16,10 @@ Install dependencies:
 
     pip install -r requirements.txt
 
+Path:
+
+    ..\lululemon-product-api\lululemonProductAPI>
+
 Usage:
 
   Start the server:
