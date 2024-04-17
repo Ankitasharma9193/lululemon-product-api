@@ -19,13 +19,6 @@ from django.contrib import admin
 from lululemonApp import views
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('products/', views.get_product_details, name='get_product_details'),
+    # path('admin/', admin.site.urls),
+    path('api/products/', views.get_product_details, name='get_product_details'),
 ]
-
-# from django.contrib import admin
-# from django.urls import path
-
-# urlpatterns = [
-#     path('admin/', admin.site.urls),
-# ]
