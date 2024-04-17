@@ -15,8 +15,8 @@ class ProductListViewTestCase(TestCase):
     @patch('lululemonApp.utils.cache.get', side_effect=[None, None])
     @patch('lululemonApp.utils.cache.set', side_effect=MagicMock())
     def test_fetch_products(self, mock_cache_set, mock_cache_get, mock_requests_get, mock_paginator):
-        expected_response = returnExpectedData()
-        response1_data, response2_data = mockDataInput()
+        expected_response = return_expected_data()
+        response1_data, response2_data = mock_input_data()
 
         mock_response1 = MagicMock()
         mock_response1.status_code = 200
@@ -45,7 +45,7 @@ class ProductListViewTestCase(TestCase):
 
         self.assertEqual(json_combined_products_first_call, expected_response)
 
-def mockDataInput():
+def mock_input_data():
         mock_records1 = [
             {
                 "attributes" : {
@@ -129,7 +129,7 @@ def mockDataInput():
         }
         return response1_data, response2_data
 
-def returnExpectedData():
+def return_expected_data():
         expected_response = [
             {
                 "product_display_name": "Leggings 1",
