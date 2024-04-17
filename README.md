@@ -24,7 +24,7 @@ Usage:
 
   Make a GET request to the API endpoint:
   
-    localserver/api/products
+    http://127.0.0.1:8000/api/products
 
 Pagination:
 
